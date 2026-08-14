@@ -10,9 +10,9 @@ import { randomUUID } from 'crypto';
 
 dotenv.config();
 
-// ==========================================
+// ============================================================================
 // 1. CONFIGURATION & TYPES
-// ==========================================
+// ============================================================================
 const CONFIG = {
   port: parseInt(process.env.PORT || '3000', 10),
   host: process.env.HOST || '0.0.0.0',
@@ -24,6 +24,7 @@ const CONFIG = {
   tmdb: {
     enabled: process.env.TMDB_ENABLED !== 'false',
     baseUrl: process.env.TMDB_BASE_URL || 'https://api.themoviedb.org/3',
+    imageBaseUrl: 'https://image.tmdb.org/t/p',
     timeout: 10000,
     keys: Object.keys(process.env)
       .filter((k) => k.startsWith('TMDB_KEY_') && process.env[k]?.trim())
@@ -43,9 +44,9 @@ interface Credential {
   lastFailure: number;
 }
 
-// ==========================================
+// ============================================================================
 // 2. HEALTH-AWARE CREDENTIAL POOL
-// ==========================================
+// ============================================================================
 class CredentialPool {
   private credentials: Credential[] = [];
   private currentIndex = 0;
@@ -118,9 +119,9 @@ class CredentialPool {
 
 const tmdbKeyPool = new CredentialPool(CONFIG.tmdb.keys);
 
-// ==========================================
+// ============================================================================
 // 3. LRU CACHE WITH DYNAMIC TTLs
-// ==========================================
+// ============================================================================
 interface CacheEntry {
   statusCode: number;
   data: any;
@@ -143,9 +144,9 @@ function getTtlForEndpoint(endpoint: string): number {
   return 300 * 1000; // 5 Minutes (Search, Trending, Discover)
 }
 
-// ==========================================
+// ============================================================================
 // 4. CIRCUIT BREAKER
-// ==========================================
+// ============================================================================
 class CircuitBreaker {
   private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
   private failureCount = 0;
@@ -183,9 +184,9 @@ class CircuitBreaker {
 
 const circuitBreaker = new CircuitBreaker();
 
-// ==========================================
+// ============================================================================
 // 5. SERVER CREATION & PLUGINS
-// ==========================================
+// ============================================================================
 const app: FastifyInstance = fastify({
   logger: {
     level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
@@ -206,8 +207,8 @@ async function setupServer() {
   await app.register(swagger, {
     openapi: {
       info: {
-        title: 'TMDB API Gateway',
-        description: 'Production-ready TMDB v3 proxy with automatic key rotation and caching',
+        title: 'TMDB API & Image Gateway',
+        description: 'Complete standalone TMDB v3 API and Image Proxy',
         version: '1.0.0'
       }
     }
@@ -219,9 +220,7 @@ async function setupServer() {
     reply.header('X-Request-ID', req.id);
   });
 
-  // ==========================================
-  // 6. HEALTH & DISCOVERY ROUTES
-  // ==========================================
+  // Health and Root Metadata
   app.get('/health', async () => ({
     status: 'ok',
     uptime: process.uptime(),
@@ -248,9 +247,46 @@ async function setupServer() {
     };
   });
 
-  // ==========================================
-  // 7. TMDB PROXY HANDLER (ALL TMDB ENDPOINTS)
-  // ==========================================
+  // ============================================================================
+  // 6. TMDB IMAGE PROXY (/t/p/* and /image/*)
+  // ============================================================================
+  async function imageProxyHandler(req: FastifyRequest, reply: FastifyReply) {
+    const rawPath = (req.params as { '*': string })['*'] || '';
+    const cleanPath = `/${rawPath.replace(/^\/+/, '')}`;
+
+    if (cleanPath.includes('..') || cleanPath.includes('://')) {
+      return reply.code(400).send({ error: 'Invalid image path' });
+    }
+
+    const upstreamImageUrl = `${CONFIG.tmdb.imageBaseUrl}${cleanPath}`;
+
+    try {
+      const imgRes = await fetch(upstreamImageUrl, {
+        headers: { 'User-Agent': 'TMDB-Image-Proxy/1.0' }
+      });
+
+      if (!imgRes.ok) {
+        return reply.code(imgRes.status).send({ error: 'Image not found' });
+      }
+
+      const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
+      const arrayBuffer = await imgRes.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      reply.header('Content-Type', contentType);
+      reply.header('Cache-Control', 'public, max-age=31536000, immutable');
+      return reply.send(buffer);
+    } catch (err) {
+      return reply.code(502).send({ error: 'Failed to fetch upstream image' });
+    }
+  }
+
+  app.get('/t/p/*', imageProxyHandler);
+  app.get('/image/*', imageProxyHandler);
+
+  // ============================================================================
+  // 7. TMDB API PROXY HANDLER (ALL READ ENDPOINTS)
+  // ============================================================================
   async function proxyHandler(req: FastifyRequest, reply: FastifyReply) {
     const rawPath = (req.params as { '*': string })['*'] || '';
     const cleanPath = `/${rawPath.replace(/^\/+/, '')}`;
@@ -266,7 +302,7 @@ async function setupServer() {
     if (!circuitBreaker.canRequest()) {
       return reply.code(503).send({
         status_code: 503,
-        status_message: 'Upstream provider is temporarily unavailable. Circuit open.',
+        status_message: 'Upstream provider is temporarily unavailable.',
         success: false
       });
     }
@@ -321,11 +357,21 @@ async function setupServer() {
       clearTimeout(timeoutId);
 
       const status = upstreamResponse.status;
-      const jsonResponse = await upstreamResponse.json();
+      let jsonResponse = await upstreamResponse.json();
 
       if (upstreamResponse.ok) {
         tmdbKeyPool.recordSuccess(apiKey);
         circuitBreaker.onSuccess();
+
+        // Rewrite base URLs in /configuration to current proxy host
+        const protocol = req.headers['x-forwarded-proto'] || 'https';
+        const host = req.headers.host;
+        const proxyBase = `${protocol}://${host}`;
+
+        if (cleanPath === '/configuration' && jsonResponse?.images) {
+          jsonResponse.images.base_url = `${proxyBase}/t/p/`;
+          jsonResponse.images.secure_base_url = `${proxyBase}/t/p/`;
+        }
 
         if (CONFIG.cacheEnabled && req.method === 'GET') {
           const ttl = getTtlForEndpoint(cleanPath);
@@ -337,20 +383,14 @@ async function setupServer() {
       } else {
         const retryAfter = upstreamResponse.headers.get('retry-after');
         const retrySec = retryAfter ? parseInt(retryAfter, 10) : undefined;
-
         tmdbKeyPool.recordFailure(apiKey, status, retrySec);
 
-        if (status >= 500) {
-          circuitBreaker.onFailure();
-        }
-
+        if (status >= 500) circuitBreaker.onFailure();
         return reply.code(status).send(jsonResponse);
       }
     } catch (err: any) {
       tmdbKeyPool.recordFailure(apiKey, 500);
       circuitBreaker.onFailure();
-
-      req.log.error(err, 'Upstream request failed');
       return reply.code(502).send({
         status_code: 502,
         status_message: 'Failed to communicate with upstream TMDB service.',
@@ -359,14 +399,13 @@ async function setupServer() {
     }
   }
 
-  // Register public proxy routes
   app.get('/api/v1/*', proxyHandler);
   app.get('/3/*', proxyHandler);
 }
 
-// ==========================================
-// 8. SERVER BOOTSTRAP / EXPORT
-// ==========================================
+// ============================================================================
+// 8. BOOTSTRAP / SERVERLESS HANDLER
+// ============================================================================
 let isReady = false;
 async function init() {
   if (!isReady) {
@@ -376,21 +415,16 @@ async function init() {
   }
 }
 
-// Standalone Local / Docker Execution
 if (!process.env.VERCEL) {
   init()
     .then(() => app.listen({ port: CONFIG.port, host: CONFIG.host }))
-    .then(() => {
-      console.log(`🚀 Gateway running at http://${CONFIG.host}:${CONFIG.port}`);
-      console.log(`📖 Docs at http://${CONFIG.host}:${CONFIG.port}/docs`);
-    })
+    .then(() => console.log(`🚀 Gateway running at http://${CONFIG.host}:${CONFIG.port}`))
     .catch((err) => {
       console.error('Fatal startup error:', err);
       process.exit(1);
     });
 }
 
-// Vercel Serverless Handler
 export default async function handler(req: any, res: any) {
   await init();
   app.server.emit('request', req, res);
