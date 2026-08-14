@@ -102,7 +102,7 @@ class CredentialPool {
       cred.cooldownUntil = Date.now() + cooldownDuration;
     } else if (cred.failureCount >= 3) {
       cred.status = 'COOLDOWN';
-      cred.cooldownUntil = Date.now() + 15000; // 15s cooldown on repeated failures
+      cred.cooldownUntil = Date.now() + 15000;
     }
   }
 
@@ -119,11 +119,10 @@ class CredentialPool {
 const tmdbKeyPool = new CredentialPool(CONFIG.tmdb.keys);
 
 // ==========================================
-// 3. LRU CACHING SYSTEM (DYNAMIC TTLs)
+// 3. LRU CACHE WITH DYNAMIC TTLs
 // ==========================================
 interface CacheEntry {
   statusCode: number;
-  headers: Record<string, string>;
   data: any;
 }
 
@@ -161,7 +160,7 @@ class CircuitBreaker {
       }
       return false;
     }
-    return true; // HALF_OPEN
+    return true;
   }
 
   public onSuccess() {
@@ -173,7 +172,7 @@ class CircuitBreaker {
     this.failureCount += 1;
     if (this.failureCount >= 5) {
       this.state = 'OPEN';
-      this.nextAttempt = Date.now() + 30000; // 30s pause
+      this.nextAttempt = Date.now() + 30000;
     }
   }
 
@@ -195,7 +194,7 @@ const app: FastifyInstance = fastify({
   genReqId: () => randomUUID()
 });
 
-async function bootstrap() {
+async function setupServer() {
   await app.register(helmet, { contentSecurityPolicy: false });
   await app.register(cors, { origin: '*' });
 
@@ -207,8 +206,8 @@ async function bootstrap() {
   await app.register(swagger, {
     openapi: {
       info: {
-        title: 'Public TMDB Proxy Gateway',
-        description: 'Exact TMDB v3 compatibility gateway with automatic key rotation and caching',
+        title: 'TMDB API Gateway',
+        description: 'Production-ready TMDB v3 proxy with automatic key rotation and caching',
         version: '1.0.0'
       }
     }
@@ -216,7 +215,6 @@ async function bootstrap() {
 
   await app.register(swaggerUi, { routePrefix: '/docs' });
 
-  // Hook: Attach correlation ID
   app.addHook('onSend', async (req, reply) => {
     reply.header('X-Request-ID', req.id);
   });
@@ -231,7 +229,7 @@ async function bootstrap() {
   }));
 
   app.get('/api/v1', async () => ({
-    name: 'TMDB API v3 Compatible Gateway',
+    name: 'TMDB API Gateway',
     version: '1.0.0',
     default_provider: 'tmdb',
     docs: '/docs'
@@ -251,13 +249,12 @@ async function bootstrap() {
   });
 
   // ==========================================
-  // 7. TMDB PROXY HANDLER (MIRRORS ALL TMDB v3 PATHS)
+  // 7. TMDB PROXY HANDLER (ALL TMDB ENDPOINTS)
   // ==========================================
   async function proxyHandler(req: FastifyRequest, reply: FastifyReply) {
     const rawPath = (req.params as { '*': string })['*'] || '';
     const cleanPath = `/${rawPath.replace(/^\/+/, '')}`;
 
-    // Security: Strict path traversal and injection guard
     if (cleanPath.includes('..') || cleanPath.includes('://')) {
       return reply.code(400).send({
         status_code: 400,
@@ -274,20 +271,17 @@ async function bootstrap() {
       });
     }
 
-    // Clone & sanitize query params (never allow client-supplied api keys)
     const incomingQuery = { ...(req.query as Record<string, string>) };
     delete incomingQuery.api_key;
     delete incomingQuery.credential;
     delete incomingQuery.key_id;
 
-    // Cache key construction
     const queryPairs = Object.keys(incomingQuery)
       .sort()
       .map((k) => `${k}=${encodeURIComponent(incomingQuery[k])}`)
       .join('&');
     const cacheKey = `tmdb:GET:${cleanPath}:${queryPairs}`;
 
-    // Serve from cache if available
     if (CONFIG.cacheEnabled && req.method === 'GET') {
       const cached = memoryCache.get(cacheKey);
       if (cached) {
@@ -296,7 +290,6 @@ async function bootstrap() {
       }
     }
 
-    // Select healthy key
     const apiKey = tmdbKeyPool.getHealthyKey();
     if (!apiKey) {
       return reply.code(503).send({
@@ -306,7 +299,6 @@ async function bootstrap() {
       });
     }
 
-    // Construct upstream URL with internal API key
     const upstreamUrl = new URL(`${CONFIG.tmdb.baseUrl}${cleanPath}`);
     Object.entries(incomingQuery).forEach(([key, val]) => {
       upstreamUrl.searchParams.set(key, val);
@@ -331,18 +323,13 @@ async function bootstrap() {
       const status = upstreamResponse.status;
       const jsonResponse = await upstreamResponse.json();
 
-      // Upstream response evaluation
       if (upstreamResponse.ok) {
         tmdbKeyPool.recordSuccess(apiKey);
         circuitBreaker.onSuccess();
 
         if (CONFIG.cacheEnabled && req.method === 'GET') {
           const ttl = getTtlForEndpoint(cleanPath);
-          memoryCache.set(
-            cacheKey,
-            { statusCode: status, headers: {}, data: jsonResponse },
-            { ttl }
-          );
+          memoryCache.set(cacheKey, { statusCode: status, data: jsonResponse }, { ttl });
         }
 
         reply.header('X-Cache', 'MISS');
@@ -375,14 +362,36 @@ async function bootstrap() {
   // Register public proxy routes
   app.get('/api/v1/*', proxyHandler);
   app.get('/3/*', proxyHandler);
-
-  // Start Server
-  await app.listen({ port: CONFIG.port, host: CONFIG.host });
-  console.log(`🚀 TMDB Gateway running at http://${CONFIG.host}:${CONFIG.port}`);
-  console.log(`📖 Interactive Docs available at http://${CONFIG.host}:${CONFIG.port}/docs`);
 }
 
-bootstrap().catch((err) => {
-  console.error('Fatal startup error:', err);
-  process.exit(1);
-});
+// ==========================================
+// 8. SERVER BOOTSTRAP / EXPORT
+// ==========================================
+let isReady = false;
+async function init() {
+  if (!isReady) {
+    await setupServer();
+    await app.ready();
+    isReady = true;
+  }
+}
+
+// Standalone Local / Docker Execution
+if (!process.env.VERCEL) {
+  init()
+    .then(() => app.listen({ port: CONFIG.port, host: CONFIG.host }))
+    .then(() => {
+      console.log(`🚀 Gateway running at http://${CONFIG.host}:${CONFIG.port}`);
+      console.log(`📖 Docs at http://${CONFIG.host}:${CONFIG.port}/docs`);
+    })
+    .catch((err) => {
+      console.error('Fatal startup error:', err);
+      process.exit(1);
+    });
+}
+
+// Vercel Serverless Handler
+export default async function handler(req: any, res: any) {
+  await init();
+  app.server.emit('request', req, res);
+}
