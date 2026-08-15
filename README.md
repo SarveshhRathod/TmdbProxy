@@ -1,10 +1,12 @@
-🎬 TMDB API Proxy & Gateway
+# 🎬 TMDB API Proxy & Gateway
 
 <p align="center">
   <strong>High-Performance TMDB API Proxy & Gateway</strong>
-</p><p align="center">
+</p>
+<p align="center">
   Secure • Fast • Scalable • Multi-Key • Cached • Vercel Ready
-</p><p align="center">
+</p>
+<p align="center">
   <a href="https://tmdb-proxy-kohl-five.vercel.app/docs">
     <img src="https://img.shields.io/badge/API-Docs-8B5CF6?style=for-the-badge&logo=swagger&logoColor=white" alt="API Docs">
   </a>
@@ -13,30 +15,35 @@
   </a>
   <img src="https://img.shields.io/badge/TMDB-v3-01B4E4?style=for-the-badge&logo=themoviedatabase&logoColor=white" alt="TMDB v3">
   <img src="https://img.shields.io/badge/REST-API-22C55E?style=for-the-badge" alt="REST API">
-</p><p align="center">
+</p>
+<p align="center">
   <a href="#-features">Features</a> •
   <a href="#-api-reference">API Reference</a> •
   <a href="#-installation">Installation</a> •
   <a href="#-deployment">Deployment</a> •
   <a href="#-integration">Integration</a>
-</p>---
-
-🌐 Production
-
-Service| URL
-🚀 API| "https://tmdb-proxy-kohl-five.vercel.app/api/v1"
-🖼️ Image Proxy| "https://tmdb-proxy-kohl-five.vercel.app/t/p"
-📚 Swagger Docs| "https://tmdb-proxy-kohl-five.vercel.app/docs"
-❤️ Health Check| "https://tmdb-proxy-kohl-five.vercel.app/health"
+</p>
 
 ---
 
-📖 About
+## 🌐 Production
+
+| Service | URL |
+|---|---|
+| 🚀 API | `https://tmdb-proxy-kohl-five.vercel.app/api/v1` |
+| 🖼️ Image Proxy | `https://tmdb-proxy-kohl-five.vercel.app/t/p` |
+| 📚 Swagger Docs | `https://tmdb-proxy-kohl-five.vercel.app/docs` |
+| ❤️ Health Check | `https://tmdb-proxy-kohl-five.vercel.app/health` |
+
+---
+
+## 📖 About
 
 TMDB API Proxy & Gateway is a standalone, production-ready REST API gateway for The Movie Database (TMDB) v3 API.
 
 It provides a secure layer between your application and TMDB while adding API-key protection, multi-key rotation, caching, rate limiting, circuit-breaker protection, and image proxying.
 
+```
 Your Application
        │
        ▼
@@ -53,20 +60,23 @@ Your Application
                │
                ▼
           TMDB API
+```
 
-🔒 Zero Public Credentials
+### 🔒 Zero Public Credentials
 
 Public clients do not need to provide a TMDB API key.
 
+```
 GET /api/v1/movie/27205
+```
 
 The gateway securely injects TMDB credentials on the server side.
 
-«Never expose TMDB API keys inside frontend, Android, iOS, or other public client applications.»
+> **Never expose TMDB API keys inside frontend, Android, iOS, or other public client applications.**
 
 ---
 
-✨ Features
+## ✨ Features
 
 - 🎬 Complete TMDB v3 Read Surface
 - 🔐 Zero API-Key Leakage
@@ -83,11 +93,11 @@ The gateway securely injects TMDB credentials on the server side.
 
 ---
 
-🎬 Supported TMDB Resources
+## 🎬 Supported TMDB Resources
 
 The gateway provides access to a broad TMDB read-only API surface.
 
-Movies
+### Movies
 
 - Movie details
 - Credits
@@ -104,7 +114,7 @@ Movies
 - Top rated
 - Upcoming
 
-TV
+### TV
 
 - TV details
 - Aggregate credits
@@ -120,7 +130,7 @@ TV
 - Airing today
 - On the air
 
-Other Resources
+### Other Resources
 
 - Seasons
 - Episodes
@@ -136,16 +146,19 @@ Other Resources
 
 ---
 
-🔄 Multi-Key API Rotation
+## 🔄 Multi-Key API Rotation
 
 Configure multiple TMDB API keys:
 
+```env
 TMDB_KEY_1=your_first_tmdb_key
 TMDB_KEY_2=your_second_tmdb_key
 TMDB_KEY_3=your_third_tmdb_key
+```
 
 The gateway automatically manages the configured key pool.
 
+```
                  Incoming Request
                         │
                         ▼
@@ -164,11 +177,13 @@ The gateway automatically manages the configured key pool.
                         │
                         ▼
                     TMDB API
+```
 
-🚨 HTTP 429 Handling
+### 🚨 HTTP 429 Handling
 
 When a key receives a rate-limit response:
 
+```
 TMDB_KEY_1
     │
     ▼
@@ -179,11 +194,13 @@ Temporary Cooldown
     │
     ▼
 Next Healthy Key
+```
 
 The gateway can temporarily remove the unhealthy key from active rotation.
 
-❌ Invalid / Revoked Key
+### ❌ Invalid / Revoked Key
 
+```
 Invalid Key
     │
     ▼
@@ -194,31 +211,34 @@ Remove From Active Pool
     │
     ▼
 Use Healthy Key
+```
 
 ---
 
-⚡ Intelligent Cache
+## ⚡ Intelligent Cache
 
 The gateway uses path-aware caching to reduce unnecessary upstream requests.
 
-Resource| Default TTL
-Movie Details| 1 hour
-TV Details| 1 hour
-Search| 5 minutes
-Trending| 5 minutes
-Discover| 5 minutes
-Genres| 24 hours
-Configuration| 24 hours
-Images| 1 year
+| Resource | Default TTL |
+|---|---|
+| Movie Details | 1 hour |
+| TV Details | 1 hour |
+| Search | 5 minutes |
+| Trending | 5 minutes |
+| Discover | 5 minutes |
+| Genres | 24 hours |
+| Configuration | 24 hours |
+| Images | 1 year |
 
-«Cache settings can be adjusted according to your deployment requirements.»
+> Cache settings can be adjusted according to your deployment requirements.
 
 ---
 
-🛡️ Circuit Breaker
+## 🛡️ Circuit Breaker
 
 The gateway protects against repeated upstream failures.
 
+```
              Normal State
                   │
                   ▼
@@ -238,503 +258,303 @@ The gateway protects against repeated upstream failures.
                   │
                   ▼
            Circuit Closed
+```
 
 This helps prevent unnecessary upstream traffic during temporary outages.
 
 ---
 
-🚦 Rate Limiting
+## 🚦 Rate Limiting
 
 The gateway supports configurable request limiting.
 
 Default configuration:
 
+```env
 RATE_LIMIT_MAX=60
 RATE_LIMIT_WINDOW_MS=60000
+```
 
 This means a default limit of 60 requests per 60 seconds when using the default configuration.
 
 ---
 
-📚 API Reference
+## 📚 API Reference
 
-❤️ System & Health
+### ❤️ System & Health
 
-Health Check
-
+**Health Check**
+```
 GET /health
-
+```
 Returns gateway health and service status.
 
-API Metadata
-
+**API Metadata**
+```
 GET /api/v1
-
+```
 Returns gateway metadata and version information.
 
-Swagger / OpenAPI
-
+**Swagger / OpenAPI**
+```
 GET /docs
-
+```
 Interactive API documentation.
 
-Admin Provider Status
-
+**Admin Provider Status**
+```
 GET /admin/providers/tmdb
-
+```
 Requires:
-
+```
 Authorization: Bearer <ADMIN_API_KEY>
-
-«Never expose the admin API key in client-side applications.»
-
----
-
-🎬 Movies
-
-Movie Details
-
-GET /api/v1/movie/{id}
-
-Returns detailed movie information.
-
-Movie Credits
-
-GET /api/v1/movie/{id}/credits
-
-Returns cast and crew.
-
-Movie Videos
-
-GET /api/v1/movie/{id}/videos
-
-Returns trailers, teasers and clips.
-
-Movie Images
-
-GET /api/v1/movie/{id}/images
-
-Returns posters, backdrops and logos.
-
-Recommendations
-
-GET /api/v1/movie/{id}/recommendations
-
-Returns recommended movies.
-
-Similar Movies
-
-GET /api/v1/movie/{id}/similar
-
-Returns similar movies.
-
-Reviews
-
-GET /api/v1/movie/{id}/reviews
-
-Returns movie reviews.
-
-Watch Providers
-
-GET /api/v1/movie/{id}/watch/providers
-
-Returns streaming availability.
-
-External IDs
-
-GET /api/v1/movie/{id}/external_ids
-
-Returns external identifiers such as IMDb and Wikidata IDs.
-
-Release Dates
-
-GET /api/v1/movie/{id}/release_dates
-
-Returns release dates and certifications.
-
-Popular Movies
-
-GET /api/v1/movie/popular
-
-Now Playing
-
-GET /api/v1/movie/now_playing
-
-Top Rated
-
-GET /api/v1/movie/top_rated
-
-Upcoming
-
-GET /api/v1/movie/upcoming
+```
+> Never expose the admin API key in client-side applications.
 
 ---
 
-💡 Append To Response
+### 🎬 Movies
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/movie/{id}` | Movie details |
+| `GET /api/v1/movie/{id}/credits` | Cast and crew |
+| `GET /api/v1/movie/{id}/videos` | Trailers, teasers, clips |
+| `GET /api/v1/movie/{id}/images` | Posters, backdrops, logos |
+| `GET /api/v1/movie/{id}/recommendations` | Recommended movies |
+| `GET /api/v1/movie/{id}/similar` | Similar movies |
+| `GET /api/v1/movie/{id}/reviews` | Movie reviews |
+| `GET /api/v1/movie/{id}/watch/providers` | Streaming availability |
+| `GET /api/v1/movie/{id}/external_ids` | External identifiers (IMDb, Wikidata) |
+| `GET /api/v1/movie/{id}/release_dates` | Release dates and certifications |
+| `GET /api/v1/movie/popular` | Popular movies |
+| `GET /api/v1/movie/now_playing` | Now playing |
+| `GET /api/v1/movie/top_rated` | Top rated |
+| `GET /api/v1/movie/upcoming` | Upcoming |
+
+#### 💡 Append To Response
 
 Multiple related resources can be requested through a single request.
 
+```
 GET /api/v1/movie/27205?append_to_response=credits,videos,images,recommendations,similar
+```
 
 This can reduce the number of individual requests required by the client.
 
 ---
 
-📺 TV Shows
+### 📺 TV Shows
 
-TV Details
-
-GET /api/v1/tv/{id}
-
-Aggregate Credits
-
-GET /api/v1/tv/{id}/aggregate_credits
-
-Content Ratings
-
-GET /api/v1/tv/{id}/content_ratings
-
-Credits
-
-GET /api/v1/tv/{id}/credits
-
-Videos
-
-GET /api/v1/tv/{id}/videos
-
-Images
-
-GET /api/v1/tv/{id}/images
-
-Recommendations
-
-GET /api/v1/tv/{id}/recommendations
-
-Similar TV Shows
-
-GET /api/v1/tv/{id}/similar
-
-Watch Providers
-
-GET /api/v1/tv/{id}/watch/providers
-
-External IDs
-
-GET /api/v1/tv/{id}/external_ids
-
-Popular TV Shows
-
-GET /api/v1/tv/popular
-
-Top Rated TV Shows
-
-GET /api/v1/tv/top_rated
-
-Airing Today
-
-GET /api/v1/tv/airing_today
-
-On The Air
-
-GET /api/v1/tv/on_the_air
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/tv/{id}` | TV details |
+| `GET /api/v1/tv/{id}/aggregate_credits` | Aggregate credits |
+| `GET /api/v1/tv/{id}/content_ratings` | Content ratings |
+| `GET /api/v1/tv/{id}/credits` | Credits |
+| `GET /api/v1/tv/{id}/videos` | Videos |
+| `GET /api/v1/tv/{id}/images` | Images |
+| `GET /api/v1/tv/{id}/recommendations` | Recommendations |
+| `GET /api/v1/tv/{id}/similar` | Similar TV shows |
+| `GET /api/v1/tv/{id}/watch/providers` | Watch providers |
+| `GET /api/v1/tv/{id}/external_ids` | External IDs |
+| `GET /api/v1/tv/popular` | Popular TV shows |
+| `GET /api/v1/tv/top_rated` | Top rated TV shows |
+| `GET /api/v1/tv/airing_today` | Airing today |
+| `GET /api/v1/tv/on_the_air` | On the air |
 
 ---
 
-🎞️ Seasons & Episodes
+### 🎞️ Seasons & Episodes
 
-Season Details
-
-GET /api/v1/tv/{id}/season/{season_number}
-
-Returns season information and episode data.
-
-Season Credits
-
-GET /api/v1/tv/{id}/season/{season_number}/credits
-
-Season Images
-
-GET /api/v1/tv/{id}/season/{season_number}/images
-
-Season Videos
-
-GET /api/v1/tv/{id}/season/{season_number}/videos
-
-Episode Details
-
-GET /api/v1/tv/{id}/season/{s_num}/episode/{ep_num}
-
-Episode Credits
-
-GET /api/v1/tv/{id}/season/{s_num}/episode/{ep_num}/credits
-
-Episode Images
-
-GET /api/v1/tv/{id}/season/{s_num}/episode/{ep_num}/images
-
-Episode Videos
-
-GET /api/v1/tv/{id}/season/{s_num}/episode/{ep_num}/videos
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/tv/{id}/season/{season_number}` | Season details and episode data |
+| `GET /api/v1/tv/{id}/season/{season_number}/credits` | Season credits |
+| `GET /api/v1/tv/{id}/season/{season_number}/images` | Season images |
+| `GET /api/v1/tv/{id}/season/{season_number}/videos` | Season videos |
+| `GET /api/v1/tv/{id}/season/{s_num}/episode/{ep_num}` | Episode details |
+| `GET /api/v1/tv/{id}/season/{s_num}/episode/{ep_num}/credits` | Episode credits |
+| `GET /api/v1/tv/{id}/season/{s_num}/episode/{ep_num}/images` | Episode images |
+| `GET /api/v1/tv/{id}/season/{s_num}/episode/{ep_num}/videos` | Episode videos |
 
 ---
 
-🔎 Search
+### 🔎 Search
 
-Search Movies
-
+**Search Movies**
+```
 GET /api/v1/search/movie
-
-Parameters:
-
-query
-page
-include_adult
-year
-primary_release_year
+```
+Parameters: `query`, `page`, `include_adult`, `year`, `primary_release_year`
 
 Example:
-
+```
 GET /api/v1/search/movie?query=Inception&page=1
+```
 
-Search TV Shows
-
+**Search TV Shows**
+```
 GET /api/v1/search/tv
+```
+Parameters: `query`, `page`, `include_adult`, `first_air_date_year`
 
-Parameters:
-
-query
-page
-include_adult
-first_air_date_year
-
-Multi Search
-
+**Multi Search**
+```
 GET /api/v1/search/multi
-
+```
 Searches movies, TV shows and people.
 
-Search People
-
+**Search People**
+```
 GET /api/v1/search/person
+```
 
-Search Collections
-
+**Search Collections**
+```
 GET /api/v1/search/collection
+```
 
-Search Companies
-
+**Search Companies**
+```
 GET /api/v1/search/company
+```
 
-Search Keywords
-
+**Search Keywords**
+```
 GET /api/v1/search/keyword
+```
 
 ---
 
-🧭 Discover
+### 🧭 Discover
 
 Discover movies using advanced filters.
 
-Discover Movies
-
+**Discover Movies**
+```
 GET /api/v1/discover/movie
-
-Common parameters:
-
-sort_by
-page
-with_genres
-without_genres
-primary_release_year
-vote_average.gte
-vote_count.gte
-with_original_language
-with_watch_providers
-watch_region
+```
+Common parameters: `sort_by`, `page`, `with_genres`, `without_genres`, `primary_release_year`, `vote_average.gte`, `vote_count.gte`, `with_original_language`, `with_watch_providers`, `watch_region`
 
 Example:
-
+```
 GET /api/v1/discover/movie?sort_by=popularity.desc&with_genres=28,878&primary_release_year=2024&vote_average.gte=7.0
+```
 
-Discover TV
-
+**Discover TV**
+```
 GET /api/v1/discover/tv
-
-Common parameters:
-
-sort_by
-page
-with_genres
-first_air_date_year
-vote_average.gte
-with_watch_providers
-watch_region
+```
+Common parameters: `sort_by`, `page`, `with_genres`, `first_air_date_year`, `vote_average.gte`, `with_watch_providers`, `watch_region`
 
 ---
 
-🔥 Trending
+### 🔥 Trending
 
+```
 GET /api/v1/trending/{media_type}/{time_window}
+```
 
-Supported Media Types
+**Supported Media Types:** `all`, `movie`, `tv`, `person`
 
-all
-movie
-tv
-person
+**Supported Time Windows:** `day`, `week`
 
-Supported Time Windows
-
-day
-week
-
-Examples
-
+Examples:
+```
 GET /api/v1/trending/movie/day
-
 GET /api/v1/trending/tv/week
+```
 
 ---
 
-🔎 Find By External ID
+### 🔎 Find By External ID
 
+```
 GET /api/v1/find/{external_id}
+```
 
 Example:
-
+```
 GET /api/v1/find/tt0816692?external_source=imdb_id
+```
 
 ---
 
-👤 People
+### 👤 People
 
-Person Details
-
-GET /api/v1/person/{id}
-
-Combined Credits
-
-GET /api/v1/person/{id}/combined_credits
-
-Movie Credits
-
-GET /api/v1/person/{id}/movie_credits
-
-TV Credits
-
-GET /api/v1/person/{id}/tv_credits
-
-Person Images
-
-GET /api/v1/person/{id}/images
-
-External IDs
-
-GET /api/v1/person/{id}/external_ids
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/person/{id}` | Person details |
+| `GET /api/v1/person/{id}/combined_credits` | Combined credits |
+| `GET /api/v1/person/{id}/movie_credits` | Movie credits |
+| `GET /api/v1/person/{id}/tv_credits` | TV credits |
+| `GET /api/v1/person/{id}/images` | Person images |
+| `GET /api/v1/person/{id}/external_ids` | External IDs |
 
 ---
 
-🏷️ Genres, Collections & Companies
+### 🏷️ Genres, Collections & Companies
 
-Movie Genres
-
-GET /api/v1/genre/movie/list
-
-TV Genres
-
-GET /api/v1/genre/tv/list
-
-Collection
-
-GET /api/v1/collection/{id}
-
-Production Company
-
-GET /api/v1/company/{id}
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/genre/movie/list` | Movie genres |
+| `GET /api/v1/genre/tv/list` | TV genres |
+| `GET /api/v1/collection/{id}` | Collection |
+| `GET /api/v1/company/{id}` | Production company |
 
 ---
 
-⚙️ Configuration
+### ⚙️ Configuration
 
-Main Configuration
-
-GET /api/v1/configuration
-
-Countries
-
-GET /api/v1/configuration/countries
-
-Languages
-
-GET /api/v1/configuration/languages
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/configuration` | Main configuration |
+| `GET /api/v1/configuration/countries` | Countries |
+| `GET /api/v1/configuration/languages` | Languages |
 
 ---
 
-🖼️ Image Proxy
+## 🖼️ Image Proxy
 
 TMDB images can be served through your gateway.
 
+```
 https://tmdb-proxy-kohl-five.vercel.app/t/p/{size}/{file_path}
+```
 
-Poster Sizes
+**Poster Sizes:** `w92` `w154` `w185` `w342` `w500` `w780` `original`
 
-w92
-w154
-w185
-w342
-w500
-w780
-original
+**Backdrop Sizes:** `w300` `w780` `w1280` `original`
 
-Backdrop Sizes
+**Profile Sizes:** `w45` `w185` `h632` `original`
 
-w300
-w780
-w1280
-original
+**Still Sizes:** `w92` `w185` `w300` `original`
 
-Profile Sizes
+**Logo Sizes:** `w45` `w92` `w154` `w185` `w300` `w500` `original`
 
-w45
-w185
-h632
-original
-
-Still Sizes
-
-w92
-w185
-w300
-original
-
-Logo Sizes
-
-w45
-w92
-w154
-w185
-w300
-w500
-original
-
-Poster Example
-
+**Poster Example**
+```
 https://tmdb-proxy-kohl-five.vercel.app/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg
+```
 
-Backdrop Example
-
+**Backdrop Example**
+```
 https://tmdb-proxy-kohl-five.vercel.app/t/p/original/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg
+```
 
-Profile Example
-
+**Profile Example**
+```
 https://tmdb-proxy-kohl-five.vercel.app/t/p/h632/wo2hJpn04vbtmh0B9utCFdsQhxM.jpg
+```
 
 ---
 
-💻 Integration
+## 💻 Integration
 
-JavaScript / TypeScript
+### JavaScript / TypeScript
 
+```javascript
 const BASE_URL = "https://tmdb-proxy-kohl-five.vercel.app";
 
 async function getMovieDetails(movieId) {
@@ -771,11 +591,11 @@ async function searchMovies(query) {
 
   return response.json();
 }
+```
 
----
+### 🐍 Python
 
-🐍 Python
-
+```python
 import requests
 
 BASE_URL = "https://tmdb-proxy-kohl-five.vercel.app"
@@ -805,11 +625,11 @@ def get_trending_movies():
 
 
 get_trending_movies()
+```
 
----
+### 🦋 Flutter / Dart
 
-🦋 Flutter / Dart
-
+```dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -843,11 +663,11 @@ class TmdbService {
     return '$baseUrl/t/p/$size$path';
   }
 }
+```
 
----
+### 🤖 Kotlin / Android
 
-🤖 Kotlin / Android
-
+```kotlin
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -867,13 +687,15 @@ interface TmdbApiService {
         @Query("page") page: Int = 1
     ): SearchResponse
 }
+```
 
 ---
 
-⚙️ Environment Variables
+## ⚙️ Environment Variables
 
-Create a ".env" file for local development.
+Create a `.env` file for local development.
 
+```env
 PORT=3000
 NODE_ENV=production
 
@@ -890,137 +712,149 @@ RATE_LIMIT_MAX=60
 RATE_LIMIT_WINDOW_MS=60000
 
 CACHE_ENABLED=true
+```
 
-Variable Reference
+### Variable Reference
 
-Variable| Required| Default| Description
-"PORT"| No| "3000"| Server port
-"NODE_ENV"| No| "production"| Runtime environment
-"TMDB_ENABLED"| No| "true"| Enable TMDB provider
-"TMDB_BASE_URL"| No| TMDB v3 URL| Upstream API
-"TMDB_KEY_1"| Yes| —| Primary TMDB API key
-"TMDB_KEY_2"| No| —| Secondary TMDB API key
-"TMDB_KEY_3"| No| —| Third TMDB API key
-"ADMIN_API_KEY"| No| —| Admin authentication key
-"RATE_LIMIT_MAX"| No| "60"| Maximum requests
-"RATE_LIMIT_WINDOW_MS"| No| "60000"| Rate-limit window
-"CACHE_ENABLED"| No| "true"| Enable cache
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `PORT` | No | `3000` | Server port |
+| `NODE_ENV` | No | `production` | Runtime environment |
+| `TMDB_ENABLED` | No | `true` | Enable TMDB provider |
+| `TMDB_BASE_URL` | No | TMDB v3 URL | Upstream API |
+| `TMDB_KEY_1` | Yes | — | Primary TMDB API key |
+| `TMDB_KEY_2` | No | — | Secondary TMDB API key |
+| `TMDB_KEY_3` | No | — | Third TMDB API key |
+| `ADMIN_API_KEY` | No | — | Admin authentication key |
+| `RATE_LIMIT_MAX` | No | `60` | Maximum requests |
+| `RATE_LIMIT_WINDOW_MS` | No | `60000` | Rate-limit window |
+| `CACHE_ENABLED` | No | `true` | Enable cache |
 
-«Never commit ".env" files or real API keys to GitHub.»
+> Never commit `.env` files or real API keys to GitHub.
 
 ---
 
-🛠️ Installation
+## 🛠️ Installation
 
-1. Clone Repository
-
+**1. Clone Repository**
+```bash
 git clone <YOUR_GITHUB_REPOSITORY_URL>
 cd <PROJECT_DIRECTORY>
+```
 
-2. Install Dependencies
-
+**2. Install Dependencies**
+```bash
 npm install
+```
 
-3. Create Environment File
-
+**3. Create Environment File**
+```bash
 cp .env.example .env
+```
 
-4. Configure TMDB
-
+**4. Configure TMDB**
+```env
 TMDB_KEY_1=your_tmdb_api_key
+```
 
 For multiple keys:
-
+```env
 TMDB_KEY_1=your_first_key
 TMDB_KEY_2=your_second_key
 TMDB_KEY_3=your_third_key
+```
 
-5. Start Development Server
-
+**5. Start Development Server**
+```bash
 npm run dev
+```
 
-Local API:
+Local API: `http://localhost:3000/api/v1`
 
-http://localhost:3000/api/v1
-
-Local Swagger:
-
-http://localhost:3000/docs
+Local Swagger: `http://localhost:3000/docs`
 
 ---
 
-☁️ Deployment
+## ☁️ Deployment
 
-Vercel
+### Vercel
 
 Install Vercel CLI
-
+```bash
 npm install -g vercel
+```
 
 Login
-
+```bash
 vercel login
+```
 
 Add Environment Variables
-
+```bash
 vercel env add TMDB_KEY_1
 vercel env add TMDB_KEY_2
 vercel env add TMDB_KEY_3
 vercel env add ADMIN_API_KEY
+```
 
 Deploy
-
+```bash
 vercel --prod
+```
 
 After deployment:
-
+```
 https://your-project.vercel.app
+```
 
 ---
 
-🔐 Security
+## 🔐 Security
 
 Production security recommendations:
 
 - ✅ Keep TMDB API keys server-side
 - ✅ Never hard-code API keys in frontend code
-- ✅ Never commit ".env"
-- ✅ Use a strong "ADMIN_API_KEY"
-- ✅ Protect "/admin/*"
+- ✅ Never commit `.env`
+- ✅ Use a strong `ADMIN_API_KEY`
+- ✅ Protect `/admin/*`
 - ✅ Enable rate limiting
 - ✅ Use HTTPS in production
 - ✅ Rotate compromised keys
 - ✅ Avoid exposing internal errors
 - ✅ Keep dependencies updated
 
-Recommended ".gitignore"
-
+**Recommended `.gitignore`**
+```
 node_modules/
 .env
 .env.local
 .env.production
 .vercel/
 *.log
+```
 
 ---
 
-📡 HTTP Status Codes
+## 📡 HTTP Status Codes
 
-Status| Meaning
-"200"| Success
-"400"| Bad Request
-"401"| Unauthorized
-"403"| Forbidden
-"404"| Not Found
-"429"| Rate Limited
-"500"| Internal Server Error
-"502"| Bad Gateway / Upstream Error
-"503"| Service Unavailable
+| Status | Meaning |
+|---|---|
+| `200` | Success |
+| `400` | Bad Request |
+| `401` | Unauthorized |
+| `403` | Forbidden |
+| `404` | Not Found |
+| `429` | Rate Limited |
+| `500` | Internal Server Error |
+| `502` | Bad Gateway / Upstream Error |
+| `503` | Service Unavailable |
 
 ---
 
-🏗️ Architecture
+## 🏗️ Architecture
 
+```
                          ┌──────────────────────┐
                          │      Client App      │
                          │ Android • iOS • Web  │
@@ -1053,11 +887,13 @@ Status| Meaning
                     │          TMDB API            │
                     │     api.themoviedb.org       │
                     └─────────────────────────────┘
+```
 
 ---
 
-📊 Request Flow
+## 📊 Request Flow
 
+```
 Client Request
       │
       ▼
@@ -1094,11 +930,13 @@ Client Request
         │
         ▼
      Client
+```
 
 ---
 
-📁 Project Structure
+## 📁 Project Structure
 
+```
 tmdb-api-proxy/
 │
 ├── api/
@@ -1121,36 +959,42 @@ tmdb-api-proxy/
 ├── package.json
 ├── vercel.json
 └── README.md
+```
 
-«The exact structure may differ depending on the implementation.»
+> The exact structure may differ depending on the implementation.
 
 ---
 
-🧪 Quick API Tests
+## 🧪 Quick API Tests
 
-Health
-
+**Health**
+```bash
 curl https://tmdb-proxy-kohl-five.vercel.app/health
+```
 
-Movie
-
+**Movie**
+```bash
 curl https://tmdb-proxy-kohl-five.vercel.app/api/v1/movie/27205
+```
 
-Search
-
+**Search**
+```bash
 curl "https://tmdb-proxy-kohl-five.vercel.app/api/v1/search/movie?query=Inception"
+```
 
-Trending
-
+**Trending**
+```bash
 curl https://tmdb-proxy-kohl-five.vercel.app/api/v1/trending/movie/day
+```
 
-Discover
-
+**Discover**
+```bash
 curl "https://tmdb-proxy-kohl-five.vercel.app/api/v1/discover/movie?sort_by=popularity.desc&with_genres=28,878"
+```
 
 ---
 
-📱 Supported Clients
+## 📱 Supported Clients
 
 <p align="center">
   <img src="https://img.shields.io/badge/Android-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android">
@@ -1161,14 +1005,16 @@ curl "https://tmdb-proxy-kohl-five.vercel.app/api/v1/discover/movie?sort_by=popu
   <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP">
-</p>Works with any HTTP-compatible client.
+</p>
+
+Works with any HTTP-compatible client.
 
 ---
 
-🧠 Why Use This Gateway?
+## 🧠 Why Use This Gateway?
 
-Without a centralized gateway:
-
+**Without a centralized gateway:**
+```
 Application
 ├── TMDB Authentication
 ├── API Requests
@@ -1177,9 +1023,10 @@ Application
 ├── Caching
 ├── Rate Limiting
 └── Image Handling
+```
 
-With this gateway:
-
+**With this gateway:**
+```
 Application
       │
       ▼
@@ -1194,16 +1041,18 @@ TMDB API Gateway
       │
       ▼
     TMDB
+```
 
 One integration. Centralized control. Multiple clients.
 
 ---
 
-📚 Interactive Documentation
+## 📚 Interactive Documentation
 
 Open the Swagger UI:
-
+```
 https://tmdb-proxy-kohl-five.vercel.app/docs
+```
 
 Swagger allows you to:
 
@@ -1215,29 +1064,23 @@ Swagger allows you to:
 
 ---
 
-⭐ Quick Start
+## ⭐ Quick Start
 
+```bash
 git clone <YOUR_GITHUB_REPOSITORY_URL>
-
 cd <PROJECT_DIRECTORY>
-
 npm install
-
 cp .env.example .env
-
 npm run dev
+```
 
-Then open:
+Then open: `http://localhost:3000/docs`
 
-http://localhost:3000/docs
-
-Production:
-
-https://tmdb-proxy-kohl-five.vercel.app/api/v1
+Production: `https://tmdb-proxy-kohl-five.vercel.app/api/v1`
 
 ---
 
-⚖️ Disclaimer
+## ⚖️ Disclaimer
 
 This project is an independent API proxy/gateway.
 
@@ -1258,7 +1101,7 @@ Please review the applicable TMDB policies before deploying this project publicl
 
 ---
 
-⭐ Support
+## ⭐ Support
 
 If this project is useful to you, consider giving the repository a ⭐ Star on GitHub.
 
@@ -1266,6 +1109,7 @@ If this project is useful to you, consider giving the repository a ⭐ Star on G
   <strong>🎬 TMDB API Proxy & Gateway</strong>
   <br>
   <sub>Secure • Fast • Scalable • Developer Friendly</sub>
-</p><p align="center">
+</p>
+<p align="center">
   Made with ❤️ for developers
 </p>
