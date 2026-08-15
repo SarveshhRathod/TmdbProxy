@@ -23,21 +23,11 @@
 
 🌐 Production
 
-Base API URL
-
-https://tmdb-proxy-kohl-five.vercel.app/api/v1
-
-Image Proxy
-
-https://tmdb-proxy-kohl-five.vercel.app/t/p
-
-Swagger / OpenAPI
-
-https://tmdb-proxy-kohl-five.vercel.app/docs
-
-Health Check
-
-https://tmdb-proxy-kohl-five.vercel.app/health
+Service| URL
+🚀 API| "https://tmdb-proxy-kohl-five.vercel.app/api/v1"
+🖼️ Image Proxy| "https://tmdb-proxy-kohl-five.vercel.app/t/p"
+📚 Swagger Docs| "https://tmdb-proxy-kohl-five.vercel.app/docs"
+❤️ Health Check| "https://tmdb-proxy-kohl-five.vercel.app/health"
 
 ---
 
@@ -45,132 +35,108 @@ https://tmdb-proxy-kohl-five.vercel.app/health
 
 TMDB API Proxy & Gateway is a standalone, production-ready REST API gateway for The Movie Database (TMDB) v3 API.
 
-It acts as a secure layer between your application and TMDB.
+It provides a secure layer between your application and TMDB while adding API-key protection, multi-key rotation, caching, rate limiting, circuit-breaker protection, and image proxying.
 
-┌─────────────────────┐
-│      Your App       │
-│ Android • Web • iOS │
-└──────────┬──────────┘
-           │
-           ▼
-┌───────────────────────────────┐
-│       TMDB API Gateway        │
-│                               │
-│  🔐 Credential Protection     │
-│  🔄 Multi-Key Rotation        │
-│  ⚡ Intelligent Cache          │
-│  🚦 Rate Limiting             │
-│  🛡️ Circuit Breaker           │
-│  🖼️ Image Proxy               │
-└──────────────┬────────────────┘
+Your Application
+       │
+       ▼
+┌─────────────────────────────┐
+│      TMDB API Gateway       │
+├─────────────────────────────┤
+│ 🔐 Credential Protection    │
+│ 🔄 Multi-Key Rotation       │
+│ ⚡ Intelligent Cache         │
+│ 🚦 Rate Limiting            │
+│ 🛡️ Circuit Breaker          │
+│ 🖼️ Image Proxy              │
+└──────────────┬──────────────┘
                │
                ▼
-       ┌───────────────┐
-       │    TMDB API   │
-       └───────────────┘
+          TMDB API
 
 🔒 Zero Public Credentials
 
-Public clients do not need to send a TMDB API key.
-
-Example:
+Public clients do not need to provide a TMDB API key.
 
 GET /api/v1/movie/27205
 
-The gateway securely injects the configured TMDB credentials server-side.
+The gateway securely injects TMDB credentials on the server side.
 
-«Your TMDB credentials should never be placed inside frontend or mobile application code.»
+«Never expose TMDB API keys inside frontend, Android, iOS, or other public client applications.»
 
 ---
 
 ✨ Features
 
-🎬 Complete TMDB v3 Read Surface
+- 🎬 Complete TMDB v3 Read Surface
+- 🔐 Zero API-Key Leakage
+- 🔄 Multi-Key Rotation
+- 🧠 Health-Aware Key Pool
+- ⚡ Intelligent LRU Cache
+- 🚦 Rate Limiting
+- 🛡️ Circuit Breaker
+- 🖼️ TMDB Image Proxy
+- 📚 Interactive Swagger / OpenAPI
+- 🚀 Vercel Ready
+- 🔌 REST API Compatible
+- 📱 Works with Android, iOS, Flutter, Web and Backend Applications
 
-Supports a broad TMDB read-only API surface including:
+---
 
-- Movies
-- TV Shows
+🎬 Supported TMDB Resources
+
+The gateway provides access to a broad TMDB read-only API surface.
+
+Movies
+
+- Movie details
+- Credits
+- Videos
+- Images
+- Recommendations
+- Similar movies
+- Reviews
+- Watch providers
+- External IDs
+- Release dates
+- Popular movies
+- Now playing
+- Top rated
+- Upcoming
+
+TV
+
+- TV details
+- Aggregate credits
+- Credits
+- Videos
+- Images
+- Recommendations
+- Similar shows
+- Watch providers
+- External IDs
+- Popular
+- Top rated
+- Airing today
+- On the air
+
+Other Resources
+
 - Seasons
 - Episodes
 - Search
 - Discover
 - Trending
 - People
-- Cast & Crew
 - Genres
 - Collections
 - Companies
-- Watch Providers
-- External IDs
-- Images
-- Videos
-- Reviews
-- Recommendations
-- Similar Content
-
-🔐 Zero API-Key Leakage
-
-TMDB credentials remain server-side.
-
-Client applications communicate only with your gateway:
-
-Client → Your Gateway → TMDB
-
-Instead of:
-
-Client → TMDB + exposed API key
-
-🔄 Multi-Key Rotation
-
-Supports multiple TMDB keys with:
-
-- Round-robin selection
-- Automatic failover
-- 429 cooldown
-- Invalid-key detection
-- Revoked-key handling
-- Health-aware key pool
-
-⚡ Intelligent LRU Cache
-
-Frequently requested data can be served from cache without contacting TMDB.
-
-Default cache strategy:
-
-- Movie / TV Details: 1 hour
-- Search: 5 minutes
-- Trending: 5 minutes
-- Discover: 5 minutes
-- Genres: 24 hours
-- Configuration: 24 hours
-- Images: 1 year
-
-🚦 Rate Limiting
-
-Protects the gateway from excessive requests and unwanted traffic.
-
-🛡️ Circuit Breaker
-
-Prevents repeated upstream requests when TMDB becomes temporarily unavailable.
-
-🖼️ Image Proxy
-
-Serve TMDB posters, backdrops, profiles, stills and logos through your own domain.
-
-📚 Swagger / OpenAPI
-
-Interactive API documentation is available at:
-
-https://tmdb-proxy-kohl-five.vercel.app/docs
-
-🚀 Vercel Ready
-
-Designed to work with Vercel serverless deployment.
+- Configuration
+- External ID lookup
 
 ---
 
-🔄 Multi-Key System
+🔄 Multi-Key API Rotation
 
 Configure multiple TMDB API keys:
 
@@ -178,30 +144,30 @@ TMDB_KEY_1=your_first_tmdb_key
 TMDB_KEY_2=your_second_tmdb_key
 TMDB_KEY_3=your_third_tmdb_key
 
-The gateway maintains a pool of configured keys.
+The gateway automatically manages the configured key pool.
 
-                    ┌──────────────┐
-                    │   Request    │
-                    └──────┬───────┘
-                           │
-                           ▼
-                  ┌─────────────────┐
-                  │   Key Pool      │
-                  ├─────────────────┤
-                  │ TMDB_KEY_1      │
-                  │ TMDB_KEY_2      │
-                  │ TMDB_KEY_3      │
-                  └────────┬────────┘
-                           │
-                           ▼
-                     Healthy Key
-                           │
-                           ▼
-                       TMDB API
+                 Incoming Request
+                        │
+                        ▼
+                 ┌──────────────┐
+                 │   Key Pool   │
+                 └──────┬───────┘
+                        │
+             ┌──────────┼──────────┐
+             ▼          ▼          ▼
+          KEY_1       KEY_2       KEY_3
+             │          │          │
+             └──────────┼──────────┘
+                        │
+                        ▼
+                  Healthy Key
+                        │
+                        ▼
+                    TMDB API
 
-🚨 Automatic Key Failure Handling
+🚨 HTTP 429 Handling
 
-If a key returns HTTP 429:
+When a key receives a rate-limit response:
 
 TMDB_KEY_1
     │
@@ -214,22 +180,26 @@ Temporary Cooldown
     ▼
 Next Healthy Key
 
-If a key becomes invalid:
+The gateway can temporarily remove the unhealthy key from active rotation.
 
-Invalid / Revoked Key
-          │
-          ▼
-   Mark Unhealthy
-          │
-          ▼
- Remove From Pool
-          │
-          ▼
+❌ Invalid / Revoked Key
+
+Invalid Key
+    │
+    ▼
+Mark Unhealthy
+    │
+    ▼
+Remove From Active Pool
+    │
+    ▼
 Use Healthy Key
 
 ---
 
-⚡ Cache Strategy
+⚡ Intelligent Cache
+
+The gateway uses path-aware caching to reduce unnecessary upstream requests.
 
 Resource| Default TTL
 Movie Details| 1 hour
@@ -241,33 +211,48 @@ Genres| 24 hours
 Configuration| 24 hours
 Images| 1 year
 
-«Cache TTLs can be adjusted according to your deployment and application requirements.»
+«Cache settings can be adjusted according to your deployment requirements.»
 
 ---
 
 🛡️ Circuit Breaker
 
-The gateway protects itself from repeated upstream failures.
+The gateway protects against repeated upstream failures.
 
-Normal
-  │
-  ▼
-Requests → TMDB
-  │
-  │ failures increase
-  ▼
-Circuit Open
-  │
-  ▼
-Temporary Protection
-  │
-  ▼
-Recovery Test
-  │
-  ▼
-Circuit Closed
+             Normal State
+                  │
+                  ▼
+            Requests → TMDB
+                  │
+                  │
+           Failures Increase
+                  │
+                  ▼
+            Circuit Open
+                  │
+                  ▼
+        Temporary Protection
+                  │
+                  ▼
+            Recovery Test
+                  │
+                  ▼
+           Circuit Closed
 
 This helps prevent unnecessary upstream traffic during temporary outages.
+
+---
+
+🚦 Rate Limiting
+
+The gateway supports configurable request limiting.
+
+Default configuration:
+
+RATE_LIMIT_MAX=60
+RATE_LIMIT_WINDOW_MS=60000
+
+This means a default limit of 60 requests per 60 seconds when using the default configuration.
 
 ---
 
@@ -275,7 +260,7 @@ This helps prevent unnecessary upstream traffic during temporary outages.
 
 ❤️ System & Health
 
-Health
+Health Check
 
 GET /health
 
@@ -287,11 +272,11 @@ GET /api/v1
 
 Returns gateway metadata and version information.
 
-Swagger
+Swagger / OpenAPI
 
 GET /docs
 
-Interactive OpenAPI documentation.
+Interactive API documentation.
 
 Admin Provider Status
 
@@ -317,7 +302,7 @@ Movie Credits
 
 GET /api/v1/movie/{id}/credits
 
-Returns cast and crew information.
+Returns cast and crew.
 
 Movie Videos
 
@@ -359,7 +344,7 @@ External IDs
 
 GET /api/v1/movie/{id}/external_ids
 
-Returns external IDs such as IMDb and Wikidata.
+Returns external identifiers such as IMDb and Wikidata IDs.
 
 Release Dates
 
@@ -387,11 +372,11 @@ GET /api/v1/movie/upcoming
 
 💡 Append To Response
 
-Multiple related resources can be requested using a single API call.
+Multiple related resources can be requested through a single request.
 
 GET /api/v1/movie/27205?append_to_response=credits,videos,images,recommendations,similar
 
-This can reduce the number of network requests required by your application.
+This can reduce the number of individual requests required by the client.
 
 ---
 
@@ -437,11 +422,11 @@ External IDs
 
 GET /api/v1/tv/{id}/external_ids
 
-Popular
+Popular TV Shows
 
 GET /api/v1/tv/popular
 
-Top Rated
+Top Rated TV Shows
 
 GET /api/v1/tv/top_rated
 
@@ -461,7 +446,7 @@ Season Details
 
 GET /api/v1/tv/{id}/season/{season_number}
 
-Returns season information and episodes.
+Returns season information and episode data.
 
 Season Credits
 
@@ -511,7 +496,7 @@ Example:
 
 GET /api/v1/search/movie?query=Inception&page=1
 
-Search TV
+Search TV Shows
 
 GET /api/v1/search/tv
 
@@ -526,11 +511,7 @@ Multi Search
 
 GET /api/v1/search/multi
 
-Searches:
-
-- Movies
-- TV Shows
-- People
+Searches movies, TV shows and people.
 
 Search People
 
@@ -553,6 +534,8 @@ GET /api/v1/search/keyword
 🧭 Discover
 
 Discover movies using advanced filters.
+
+Discover Movies
 
 GET /api/v1/discover/movie
 
@@ -593,14 +576,14 @@ watch_region
 
 GET /api/v1/trending/{media_type}/{time_window}
 
-Media Types
+Supported Media Types
 
 all
 movie
 tv
 person
 
-Time Windows
+Supported Time Windows
 
 day
 week
@@ -685,13 +668,11 @@ Languages
 
 GET /api/v1/configuration/languages
 
-The configuration response can be used by clients to understand supported TMDB configuration values.
-
 ---
 
 🖼️ Image Proxy
 
-The gateway can proxy TMDB images through your own domain.
+TMDB images can be served through your gateway.
 
 https://tmdb-proxy-kohl-five.vercel.app/t/p/{size}/{file_path}
 
@@ -818,7 +799,9 @@ def get_trending_movies():
         print(f"🎬 {title} ({rating} ⭐)")
 
         if poster:
-            print(f"Poster: {BASE_URL}/t/p/w500{poster}")
+            print(
+                f"Poster: {BASE_URL}/t/p/w500{poster}"
+            )
 
 
 get_trending_movies()
@@ -915,15 +898,15 @@ Variable| Required| Default| Description
 "NODE_ENV"| No| "production"| Runtime environment
 "TMDB_ENABLED"| No| "true"| Enable TMDB provider
 "TMDB_BASE_URL"| No| TMDB v3 URL| Upstream API
-"TMDB_KEY_1"| Yes| —| Primary TMDB key
-"TMDB_KEY_2"| No| —| Secondary TMDB key
-"TMDB_KEY_3"| No| —| Third TMDB key
+"TMDB_KEY_1"| Yes| —| Primary TMDB API key
+"TMDB_KEY_2"| No| —| Secondary TMDB API key
+"TMDB_KEY_3"| No| —| Third TMDB API key
 "ADMIN_API_KEY"| No| —| Admin authentication key
 "RATE_LIMIT_MAX"| No| "60"| Maximum requests
 "RATE_LIMIT_WINDOW_MS"| No| "60000"| Rate-limit window
 "CACHE_ENABLED"| No| "true"| Enable cache
 
-«Do not commit ".env" files or real API keys to GitHub.»
+«Never commit ".env" files or real API keys to GitHub.»
 
 ---
 
@@ -956,11 +939,11 @@ TMDB_KEY_3=your_third_key
 
 npm run dev
 
-Open:
+Local API:
 
-http://localhost:3000
+http://localhost:3000/api/v1
 
-Swagger:
+Local Swagger:
 
 http://localhost:3000/docs
 
@@ -1005,7 +988,7 @@ Production security recommendations:
 - ✅ Use a strong "ADMIN_API_KEY"
 - ✅ Protect "/admin/*"
 - ✅ Enable rate limiting
-- ✅ Use HTTPS
+- ✅ Use HTTPS in production
 - ✅ Rotate compromised keys
 - ✅ Avoid exposing internal errors
 - ✅ Keep dependencies updated
@@ -1040,7 +1023,6 @@ Status| Meaning
 
                          ┌──────────────────────┐
                          │      Client App      │
-                         │                      │
                          │ Android • iOS • Web  │
                          │ Flutter • React etc. │
                          └──────────┬───────────┘
@@ -1074,6 +1056,47 @@ Status| Meaning
 
 ---
 
+📊 Request Flow
+
+Client Request
+      │
+      ▼
+┌───────────────┐
+│ Rate Limiter  │
+└───────┬───────┘
+        │
+        ▼
+┌───────────────┐
+│ Cache Lookup  │
+└───────┬───────┘
+        │
+        ├──────── Cache Hit ────────► Response
+        │
+        ▼
+┌────────────────┐
+│   Key Pool     │
+└───────┬────────┘
+        │
+        ▼
+┌────────────────┐
+│ Healthy Key    │
+└───────┬────────┘
+        │
+        ▼
+┌────────────────┐
+│    TMDB API    │
+└───────┬────────┘
+        │
+        ▼
+┌────────────────┐
+│ Store in Cache │
+└───────┬────────┘
+        │
+        ▼
+     Client
+
+---
+
 📁 Project Structure
 
 tmdb-api-proxy/
@@ -1103,7 +1126,7 @@ tmdb-api-proxy/
 
 ---
 
-🧪 Quick API Test
+🧪 Quick API Tests
 
 Health
 
@@ -1138,78 +1161,41 @@ curl "https://tmdb-proxy-kohl-five.vercel.app/api/v1/discover/movie?sort_by=popu
   <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP">
-</p>The gateway works with any HTTP-compatible client.
-
----
-
-📊 Request Flow
-
-Client Request
-      │
-      ▼
-┌───────────────┐
-│ Rate Limiter  │
-└───────┬───────┘
-        │
-        ▼
-┌───────────────┐
-│ Cache Lookup  │
-└───────┬───────┘
-        │
-   Cache Hit?
-    /       \
-  YES        NO
-   │          │
-   ▼          ▼
-Response   Key Pool
-              │
-              ▼
-        Healthy TMDB Key
-              │
-              ▼
-          TMDB API
-              │
-              ▼
-        Cache Response
-              │
-              ▼
-           Client
+</p>Works with any HTTP-compatible client.
 
 ---
 
 🧠 Why Use This Gateway?
 
-Instead of implementing TMDB authentication, caching, failover, image handling and rate limiting separately in every application:
+Without a centralized gateway:
 
-Without Gateway
+Application
+├── TMDB Authentication
+├── API Requests
+├── API Key Management
+├── Error Handling
+├── Caching
+├── Rate Limiting
+└── Image Handling
 
-App
- ├── TMDB Authentication
- ├── API Calls
- ├── Key Management
- ├── Error Handling
- ├── Caching
- ├── Rate Limiting
- └── Image URLs
+With this gateway:
 
-With the gateway:
-
-App
-  │
-  ▼
+Application
+      │
+      ▼
 TMDB API Gateway
-  │
-  ├── Authentication
-  ├── Key Management
-  ├── Caching
-  ├── Rate Limiting
-  ├── Failover
-  └── Image Proxy
-  │
-  ▼
-TMDB
+      │
+      ├── Authentication
+      ├── Key Management
+      ├── Caching
+      ├── Rate Limiting
+      ├── Failover
+      └── Image Proxy
+      │
+      ▼
+    TMDB
 
-One integration. Multiple applications. Centralized control.
+One integration. Centralized control. Multiple clients.
 
 ---
 
@@ -1219,13 +1205,35 @@ Open the Swagger UI:
 
 https://tmdb-proxy-kohl-five.vercel.app/docs
 
-You can use it to:
+Swagger allows you to:
 
-- Explore endpoints
-- View parameters
-- Send test requests
+- Explore API endpoints
+- View request parameters
+- Test API requests
 - Inspect responses
-- Understand API structure
+- Understand the API structure
+
+---
+
+⭐ Quick Start
+
+git clone <YOUR_GITHUB_REPOSITORY_URL>
+
+cd <PROJECT_DIRECTORY>
+
+npm install
+
+cp .env.example .env
+
+npm run dev
+
+Then open:
+
+http://localhost:3000/docs
+
+Production:
+
+https://tmdb-proxy-kohl-five.vercel.app/api/v1
 
 ---
 
@@ -1246,7 +1254,7 @@ You are responsible for ensuring that your deployment and usage comply with:
 - Applicable rate limits
 - Applicable laws and regulations
 
-Please review TMDB's official policies before deploying this project publicly.
+Please review the applicable TMDB policies before deploying this project publicly.
 
 ---
 
